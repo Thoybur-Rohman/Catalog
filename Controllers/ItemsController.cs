@@ -16,8 +16,25 @@ namespace Catalog.Controller
             this.repository = _repository;
 
         }
+        //POST 
+        [HttpPost]
+        public ActionResult<ItemDto> CreateItem(CreateItemDto itemDto)
+        {
+            Item item = new()
+            {
+                Id = Guid.NewGuid(),
+                Name = itemDto.Name,
+                Price = itemDto.Price,
+                CreatedDate = DateTimeOffset.UtcNow
+            };
 
-        // Get all Items 
+            repository.CreateItem(item);
+
+            return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item.AsDtos());
+
+        }
+
+        // GET all Items 
         [HttpGet]
         public IEnumerable<ItemDto> GetItems()
         {
@@ -26,7 +43,7 @@ namespace Catalog.Controller
         }
 
 
-        //Get by Id 
+        //GET by Id 
         [HttpGet("{id}")]
         public ActionResult<ItemDto> GetItem(Guid id)
         {
@@ -39,23 +56,44 @@ namespace Catalog.Controller
             return item.AsDtos();
         }
 
-
-        //Post 
-        [HttpPost]
-        public ActionResult<ItemDto> CreateItem(CreateItemDto itemDto)
+        //PUT / items / {id}
+        [HttpPut("{id}")]
+        public ActionResult UpdateItem(Guid id, UpdateDto updateItemDto)
         {
-                Item item = new(){
-                    Id = Guid.NewGuid(),
-                    Name = itemDto.Name,
-                    Price = itemDto.Price,
-                    CreatedDate = DateTimeOffset.UtcNow
-                };
+            var existingItem = repository.GetItem(id);
 
-                repository.CreateItem(item);
+            if (existingItem is null)
+            {
+                return NotFound();
+            }
 
-                return CreatedAtAction(nameof(GetItem), new{ id = item.Id} , item.AsDtos());
+            Item updatedItem = existingItem with
+            {
+                Name = updateItemDto.Name,
+                Price = updateItemDto.Price
+            };
 
+            repository.UpdateIten(updatedItem);
+            return NoContent();
         }
+
+        //Delete/item/{id}
+        [HttpDelete("{id}")]
+        public ActionResult DeleteItem(Guid id)
+        {
+            var existingItem = repository.GetItem(id);
+
+            if (existingItem is null)
+            {
+                return NotFound();
+            }
+
+            repository.DeleteItem(id);
+            return NoContent();
+        }
+
+
+
 
     }
 
