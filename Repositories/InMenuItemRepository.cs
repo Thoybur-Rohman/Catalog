@@ -18,9 +18,14 @@ namespace Catalog.Repositorys
             return items;
         }
 
-        public Item GetItem(Guid id)
+        public Item  GetItem(Guid id)
         {
             return items.Where(item => item.Id == id).SingleOrDefault();
+        }
+
+        public void CreateItem(Item item)
+        {
+            items.Add(item);
         }
     }
 }
